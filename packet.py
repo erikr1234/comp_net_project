@@ -9,12 +9,22 @@ import random
 import asyncore
 import numpy as np
 
-def create_packet(pkttype, src, dst, seq, data):
+def create_packet(pkttype, ttl, kval, src, dst, dst1, dst2, dst3, seq, hops, adRoute, LS, CRC, data):
     """Create a new packet based on given id"""
     # Type(1),  LEN(4), SRCID(1),  DSTID(1), SEQ(4), DATA(1000)
-    pktlen = len(data)
-    header = struct.pack('BLBBL', pkttype, pktlen, dst, src, seq)
-    return header + bytes(data,'utf-8')
+    if pkttype == 1: #HELLO PACKET
+        header = struct.pack('BBBL', pkttype, seq, ttl, src)
+    if pkttype == 2: #HELLO ACK PACKET
+        header = struct.pack('BBBLL', pkttype, seq, ttl, src, dst)
+    if pkttype == 3: #ROUTING PACKET
+        header = struct.pack('BBBBBBLLB', pkttype, seq, ttl, pkttype, src, hops, adRoute, LS, CRC)
+    if pkttype == 4: #UNICAST DATA PACKET
+        header = struct.pack('BBBLL', pkttype, seq, ttl, src, dst)
+        header = header + bytes(data,'utf-8')
+    if pkttype == 5: #MULTICAST DATA PACKET
+        header = struct.pack('BBBBLLL', pkttype, seq, ttl, kval, dst1, dst2, dst3)
+        header = header + bytes(data,'utf-8')
+    return header
 
 def read_header(pkt):
     #Change the bytes to account for network encapsulations
@@ -33,7 +43,7 @@ def read_data(pkt):
 
 
 ###################################
-####   Assignment Code Below   ####
+####   IGNORE THE SHIT BELOW   ####
 ###################################
 
 #Starts a ping from current host (src) to desired destination (dst)
